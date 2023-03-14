@@ -1,8 +1,8 @@
-import { ArrayMinSize, IsArray, IsOptional, IsString } from 'class-validator';
+import { IsString, IsOptional, IsArray, ArrayMinSize } from 'class-validator';
 
 export class AtualizarCategoriaDto {
-  @IsOptional()
   @IsString()
+  @IsOptional()
   descricao: string;
 
   @IsArray()
@@ -11,7 +11,7 @@ export class AtualizarCategoriaDto {
 }
 
 interface Evento {
-  name: string;
+  nome: string;
   operacao: string;
-  valor: string;
+  valor: number;
 }
