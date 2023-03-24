@@ -11,12 +11,15 @@ import {
   Param,
   BadRequestException,
   Delete,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { CriarJogadorDto } from './dtos/criar-jogador.dto';
 import { AtualizarJogadorDto } from './dtos/atualizar-jogador.dto';
 import { Observable } from 'rxjs';
 import { ClientProxySmartRanking } from '../proxyrmq/client-proxy';
 import { ValidacaoParametrosPipe } from '../common/pipes/validacao-parametros.pipe';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('api/v1/jogadores')
 export class JogadoresController {
@@ -71,5 +74,11 @@ export class JogadoresController {
   @Delete('/:_id')
   async deletarJogador(@Param('_id', ValidacaoParametrosPipe) _id: string) {
     await this.clientAdminBackend.emit('deletar-jogador', { _id });
+  }
+
+  @Post('/:id/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadArquivo(@UploadedFile() file, @Param('_id') _id: string) {
+    this.logger.log(file);
   }
 }
