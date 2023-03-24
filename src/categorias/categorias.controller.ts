@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { CriarCategoriaDto } from './dtos/criar-categoria.dto';
 import { AtualizarCategoriaDto } from './dtos/atualizar-categoria.dto';
+import { Observable } from 'rxjs';
 import { CategoriasService } from './categorias.service';
 
 @Controller('api/v1/categorias')
@@ -22,21 +23,21 @@ export class CategoriasController {
 
   @Post()
   @UsePipes(ValidationPipe)
-  criarCategoria(@Body() criarCategoriaDto: CriarCategoriaDto) {
-    this.categoriasService.criarCategoria(criarCategoriaDto);
+  async criarCategoria(@Body() criarCategoriaDto: CriarCategoriaDto) {
+    await this.categoriasService.criarCategoria(criarCategoriaDto);
   }
 
   @Get()
-  async consultarCategorias(@Query('idCategoria') _id: string) {
-    return await this.categoriasService.consultarCategorias(_id);
+  consultarCategorias(@Query('idCategoria') _id: string): Observable<any> {
+    return this.categoriasService.consultarCategorias(_id);
   }
 
   @Put('/:_id')
   @UsePipes(ValidationPipe)
-  atualizarCategoria(
+  async atualizarCategoria(
     @Body() atualizarCategoriaDto: AtualizarCategoriaDto,
     @Param('_id') _id: string,
   ) {
-    this.categoriasService.atualizarCategoria(atualizarCategoriaDto, _id);
+    await this.categoriasService.atualizarCategoria(atualizarCategoriaDto, _id);
   }
 }

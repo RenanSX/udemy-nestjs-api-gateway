@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CriarCategoriaDto } from './dtos/criar-categoria.dto';
 import { AtualizarCategoriaDto } from './dtos/atualizar-categoria.dto';
+import { Observable } from 'rxjs';
 import { ClientProxySmartRanking } from '../proxyrmq/client-proxy';
 
 @Injectable()
@@ -13,10 +14,8 @@ export class CategoriasService {
     this.clientAdminBackend.emit('criar-categoria', criarCategoriaDto);
   }
 
-  async consultarCategorias(_id: string): Promise<any> {
-    return await this.clientAdminBackend
-      .send('consultar-categorias', _id ? _id : '')
-      .toPromise();
+  consultarCategorias(_id: string): Observable<any> {
+    return this.clientAdminBackend.send('consultar-categorias', _id ? _id : '');
   }
 
   atualizarCategoria(

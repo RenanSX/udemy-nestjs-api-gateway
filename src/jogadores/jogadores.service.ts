@@ -3,7 +3,7 @@ import { CriarJogadorDto } from './dtos/criar-jogador.dto';
 import { AtualizarJogadorDto } from './dtos/atualizar-jogador.dto';
 import { Observable } from 'rxjs';
 import { ClientProxySmartRanking } from '../proxyrmq/client-proxy';
-import { AwsService } from '../aws/aws.service';
+import { AwsS3Service } from '../aws/aws-s3.service';
 import { Jogador } from '../jogadores/interfaces/jogador.interface';
 import { Categoria } from '../categorias/interfaces/categoria.interface';
 
@@ -13,7 +13,7 @@ export class JogadoresService {
 
   constructor(
     private clientProxySmartRanking: ClientProxySmartRanking,
-    private awsService: AwsService,
+    private awsS3Service: AwsS3Service,
   ) {}
 
   private clientAdminBackend = this.clientProxySmartRanking.getClientProxyAdminBackendInstance();
@@ -32,7 +32,7 @@ export class JogadoresService {
     }
   }
 
-  async uploadArquivo(file, _id: string): Promise<any> {
+  async uploadArquivo(file, _id: string) {
     //Verificar se o jogador está cadastrado
     const jogador: Jogador = await this.clientAdminBackend
       .send('consultar-jogadores', _id)
@@ -43,10 +43,9 @@ export class JogadoresService {
     }
 
     //Enviar o arquivo para o S3 e recuperar a URL de acesso
-    const urlFotoJogador: { url: '' } = await this.awsService.uploadArquivo(
-      file,
-      _id,
-    );
+    const urlFotoJogador: {
+      url: string;
+    } = await this.awsS3Service.uploadArquivo(file, _id);
 
     //Atualizar o atributo URL da entidade jogador
     const atualizarJogadorDto: AtualizarJogadorDto = {};
@@ -58,15 +57,11 @@ export class JogadoresService {
     });
 
     //Retornar o jogador atualizado para o cliente
-    return await this.clientAdminBackend
-      .send('consultar-jogadores', _id)
-      .toPromise();
+    return this.clientAdminBackend.send('consultar-jogadores', _id);
   }
 
-  async consultarJogadores(_id: string): Promise<any> {
-    return await this.clientAdminBackend
-      .send('consultar-jogadores', _id ? _id : '')
-      .toPromise();
+  consultarJogadores(_id: string): Observable<any> {
+    return this.clientAdminBackend.send('consultar-jogadores', _id ? _id : '');
   }
 
   async atualizarJogador(
@@ -87,7 +82,7 @@ export class JogadoresService {
     }
   }
 
-  deletarJogador(_id: string) {
-    this.clientAdminBackend.emit('deletar-jogador', { _id });
+  async deletarJogador(_id: string) {
+    await this.clientAdminBackend.emit('deletar-jogador', { _id });
   }
 }

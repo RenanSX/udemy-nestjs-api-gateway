@@ -12,6 +12,8 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { CriarJogadorDto } from './dtos/criar-jogador.dto';
 import { AtualizarJogadorDto } from './dtos/atualizar-jogador.dto';
@@ -19,6 +21,8 @@ import { Observable } from 'rxjs';
 import { ValidacaoParametrosPipe } from '../common/pipes/validacao-parametros.pipe';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JogadoresService } from './jogadores.service';
+import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
 
 @Controller('api/v1/jogadores')
 export class JogadoresController {
@@ -26,6 +30,7 @@ export class JogadoresController {
 
   constructor(private jogadoresService: JogadoresService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   @UsePipes(ValidationPipe)
   async criarJogador(@Body() criarJogadorDto: CriarJogadorDto) {
@@ -40,9 +45,14 @@ export class JogadoresController {
     return await this.jogadoresService.uploadArquivo(file, _id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
-  async consultarJogadores(@Query('idJogador') _id: string) {
-    return await this.jogadoresService.consultarJogadores(_id);
+  consultarJogadores(
+    @Req() req: Request,
+    @Query('idJogador') _id: string,
+  ): Observable<any> {
+    this.logger.log(`req: ${JSON.stringify(req.user)}`);
+    return this.jogadoresService.consultarJogadores(_id);
   }
 
   @Put('/:_id')
@@ -55,7 +65,7 @@ export class JogadoresController {
   }
 
   @Delete('/:_id')
-  deletarJogador(@Param('_id', ValidacaoParametrosPipe) _id: string) {
-    this.jogadoresService.deletarJogador(_id);
+  async deletarJogador(@Param('_id', ValidacaoParametrosPipe) _id: string) {
+    await this.jogadoresService.deletarJogador(_id);
   }
 }

@@ -31,7 +31,7 @@ export class DesafiosController {
   }
 
   @Get()
-  async consultarDesafios(@Query('idJogador') idJogador: string) {
+  async consultarDesafios(@Query('idJogador') idJogador: string): Promise<any> {
     return await this.desafiosService.consultarDesafios(idJogador);
   }
 
@@ -40,7 +40,7 @@ export class DesafiosController {
     @Body(DesafioStatusValidacaoPipe) atualizarDesafioDto: AtualizarDesafioDto,
     @Param('desafio') _id: string,
   ) {
-    this.desafiosService.atualizarDesafio(atualizarDesafioDto, _id);
+    await this.desafiosService.atualizarDesafio(atualizarDesafioDto, _id);
   }
 
   @Post('/:desafio/partida/')
